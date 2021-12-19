@@ -4,17 +4,23 @@ import re
 
 
 class JMESPath:
+    _compiled = None
+
     def __init__(self, expr: str):
         self._expr = expr
-        self._compiled = jmespath.compile(expr)
 
     def __getitem__(self, item: Any) -> Any:
-        if isinstance(item, int):
-            return JMESPath(f"{self._expr}[{item}]")
+        cls = self.__class__
 
-        return JMESPath(f"{self._expr}.{item}")
+        if isinstance(item, int):
+            return cls(f"{self._expr}[{item}]")
+
+        return cls(f"{self._expr}.{item}")
 
     def __call__(self, x: Any) -> Any:
+        if self._compiled is None:
+            self._compiled = jmespath.compile(self._expr)
+
         return self._compiled.search(x)
 
     def __eq__(self, other: Any):
@@ -66,6 +72,3 @@ class JMESPath:
             return re_pattern.search(self(x)) is not None
 
         return match
-
-
-P = JMESPath

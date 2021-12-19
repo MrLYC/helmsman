@@ -1,11 +1,13 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import tempfile
 from typing import Dict, Any
 import yaml
-from delegator import run
 from py_linq import Enumerable
-from hashlib import sha256
-import tempfile
+from subprocess import Popen, PIPE
+
+
+class ProcessRunException(Exception):
+    pass
 
 
 @dataclass
@@ -27,13 +29,17 @@ class Chart:
         with tempfile.TemporaryDirectory() as tmpdir:
             for index, value in enumerate(values):
                 value_file = f"{tmpdir}/values-{index}.yaml"
-                cmds.append(f"-f={value_file}")
+                cmds.append(f"--values={value_file}")
                 with open(value_file, "w") as f:
                     yaml.safe_dump(value, f)
 
-            command = run(cmds)
-            assert command.return_code == 0, command.err
-            return command.out
+            process = Popen(cmds, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = process.communicate()
+
+        if process.poll() != 0:
+            raise ProcessRunException(stderr.decode("utf-8"))
+
+        return stdout.decode("utf-8")
 
     def render(self, *values: Dict[str, Any]):
         rendered = self._render_by_helm(*values)
