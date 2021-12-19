@@ -12,35 +12,22 @@ import tempfile
 class Chart:
     chart: str
     binary: str = "helm"
-    cluster_version: str = ""
-    caches: Dict[str, str] = field(default_factory=dict, init=False)
-
-    def _get_cache_key(self, *values: Dict[str, Any]):
-        values_yaml = yaml.safe_dump_all(values)
-        sha256_hash = sha256(values_yaml.encode("utf-8")).hexdigest()
-        return sha256_hash
-
-    def _get_from_cache(self, *values: Dict[str, Any]):
-        cache_key = self._get_cache_key(*values)
-        if cache_key not in self.caches:
-            return None
-
-        with open(self.caches[cache_key], "r") as f:
-            return f.read().decode("utf-8")
-
-    def _set_into_cache(self, rendered: str, *values: Dict[str, Any]):
-        cache_key = self._get_cache_key(*values)
-        with tempfile.TemporaryFile() as f:
-            f.write(rendered.encode("utf-8"))
-            self.caches[cache_key] = f.name
+    kube_version: str = ""
+    api_version: str = ""
 
     def _render_by_helm(self, *values: Dict[str, Any]):
         cmds = [self.binary, "template", self.chart]
 
+        if self.kube_version:
+            cmds.append(f"--kube-version={self.kube_version}")
+
+        if self.api_version:
+            cmds.append(f"--api-version={self.api_version}")
+
         with tempfile.TemporaryDirectory() as tmpdir:
             for index, value in enumerate(values):
                 value_file = f"{tmpdir}/values-{index}.yaml"
-                cmds.extend([f"-f", value_file])
+                cmds.append(f"-f={value_file}")
                 with open(value_file, "w") as f:
                     yaml.safe_dump(value, f)
 
@@ -49,9 +36,5 @@ class Chart:
             return command.out
 
     def render(self, *values: Dict[str, Any]):
-        rendered = self._get_from_cache(*values)
-        if rendered is None:
-            rendered = self._render_by_helm(*values)
-            self._set_into_cache(rendered, *values)
-
+        rendered = self._render_by_helm(*values)
         return Enumerable(yaml.safe_load_all(rendered))
