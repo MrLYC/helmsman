@@ -1,7 +1,7 @@
 
 [tool.poetry]
 name = "helmsman"
-version = "0.1.5"
+version = "0.1.6"
 description = "Helmsman is a test framework for helm"
 authors = ["MrLYC <imyikong@gmail.com>"]
 
