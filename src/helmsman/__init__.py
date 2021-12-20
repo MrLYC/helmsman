@@ -2,7 +2,7 @@
 
 from helmsman.chart import Chart
 from helmsman.jmespath import JMESPath as P
-from helmsman.kind import KindFilter as KindFilter
+from helmsman.kind import KindFilter as K
 
 
 __author__ = """MrLYC"""
