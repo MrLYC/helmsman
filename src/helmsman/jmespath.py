@@ -72,3 +72,15 @@ class JMESPath:
             return re_pattern.search(self(x)) is not None
 
         return match
+
+    def is_none(self):
+        def match(x: Any) -> bool:
+            return self(x) is None
+
+        return match
+
+    def is_not_none(self):
+        def match(x: Any) -> bool:
+            return self(x) is not None
+
+        return match

@@ -37,9 +37,9 @@ class Chart:
             stdout, stderr = process.communicate()
 
         if process.poll() != 0:
-            raise ProcessRunException(stderr.decode("utf-8"))
+            raise ProcessRunException(stderr)
 
-        return stdout.decode("utf-8")
+        return stdout
 
     def render(self, *values: Dict[str, Any]):
         rendered = self._render_by_helm(*values)
