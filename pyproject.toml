@@ -68,7 +68,7 @@ coverage = {version = "^6.0.1", extras = ["toml"]}
 pytest-cov = "^3.0.0"
 watchdog = {version = "^2.1.6", extras = ["watchmedo"]}
 ipython = "^7.30.1"
-Faker = "^10.0.0"
+Faker = "^13.15.1"
 pytest-mock = "^3.6.1"
 
 [tool.coverage.paths]
