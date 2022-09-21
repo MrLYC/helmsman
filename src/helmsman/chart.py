@@ -16,6 +16,7 @@ class Chart:
     binary: str = "helm"
     kube_version: str = ""
     api_version: str = ""
+    namespace: str = "default"
 
     def _render_by_helm(self, *values: Dict[str, Any]):
         cmds = [self.binary, "template", self.chart]
@@ -25,6 +26,9 @@ class Chart:
 
         if self.api_version:
             cmds.append(f"--api-version={self.api_version}")
+
+        if self.namespace:
+            cmds.append(f"--namespace={self.namespace}")
 
         with tempfile.TemporaryDirectory() as tmpdir:
             for index, value in enumerate(values):

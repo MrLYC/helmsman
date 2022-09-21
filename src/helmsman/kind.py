@@ -12,7 +12,7 @@ class KindFilter:
         name_path = jmespath.compile("metadata.name")
 
         def match(x: Enumerable) -> bool:
-            if self._path.search(x) != self._kind:
+            if not self(x):
                 return False
 
             if name_path.search(x) != name:
@@ -27,7 +27,7 @@ class KindFilter:
         name_re = re.compile(pattern)
 
         def match(x: Enumerable) -> bool:
-            if self._path.search(x) != self._kind:
+            if not self(x):
                 return False
 
             result = name_path.search(x)
@@ -37,6 +37,24 @@ class KindFilter:
             return name_re.search(result) is not None
 
         return match
+
+    def match_labels(self, expected_labels: Dict[str, str]):
+        labels_path = jmespath.compile("metadata.labels")
+
+        def match(x: Enumerable) -> bool:
+            if not self(x):
+                return False
+
+            labels = labels_path.search(x)
+            if labels is None:
+                return False
+
+            return not expected_labels.items() - labels.items()
+
+        return match
+
+    def __call__(self, x: Enumerable) -> bool:
+            return self._path.search(x) == self._kind
 
 
 class KubeKindFilter:
@@ -58,3 +76,4 @@ class KubeKindFilter:
     cluster_role = KindFilter("ClusterRole")
     cluster_role_binding = KindFilter("ClusterRoleBinding")
     custom_resource_definition = KindFilter("CustomResourceDefinition")
+    service_monitor = KindFilter("ServiceMonitor")
