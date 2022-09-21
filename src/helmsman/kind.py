@@ -1,6 +1,7 @@
 import jmespath
 from py_linq import Enumerable
 import re
+from typing import Dict
 
 
 class KindFilter:
